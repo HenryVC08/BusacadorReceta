@@ -120,7 +120,7 @@ function iniciarApp() {
 
             resultado.appendChild(recetaContenedor)
 
-            console.log(recetaHeading)
+            // console.log(recetaHeading)
 
         })
     }
@@ -179,6 +179,7 @@ function iniciarApp() {
 
         const modalFooter = document.querySelector('.modal-footer')
         limpiarHTML(modalFooter)
+
      //Botonos y cerrar favorito 
         const btnFavorito = document.createElement('BUTTON')
         btnFavorito.classList.add('btn','btn-danger', 'col')
@@ -192,6 +193,15 @@ function iniciarApp() {
             modal.hide()
         }
 
+         //LOCAL STORAGE
+        btnFavorito.onclick = function (){
+            agregarFavorito({
+                id: idMeal,
+                titulo: strMeal,
+                img: strMealThumb
+            });
+        }
+
         modalFooter.appendChild(btnFavorito)
         modalFooter.appendChild(btnCerrarModal)
 
@@ -199,6 +209,15 @@ function iniciarApp() {
         modal.show()
     }
 
+    function agregarFavorito(receta){
+        // console.log(receta)
+        const favoritos = JSON.parse(localStorage.getItem('favoritos')) ?? []
+        localStorage.setItem('favoritos', JSON.stringify([...favoritos, receta]))
+    }
+
+    function existeStorage(){
+         
+    }
 
     function limpiarHTML(selector) {
         while (selector.firstChild) {
