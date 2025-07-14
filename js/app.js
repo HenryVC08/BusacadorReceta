@@ -1,13 +1,26 @@
 
 function iniciarApp() {
 
-    const selectCatergorias = document.querySelector('#categorias')
-    selectCatergorias.addEventListener('change', seleccionarCategoria)
-
+    const selectCatergorias = document.querySelector('#categorias') 
     const resultado = document.querySelector('#resultado')
+
+
+    if (selectCatergorias) {
+        selectCatergorias.addEventListener('change', seleccionarCategoria)
+
+        obtenerCategorias()
+
+    }
+
+    const favoritosDiv = document.querySelector('.favoritos')
+    if(favoritosDiv){
+        obtenerFavoritos()
+    }
+
+
+
     const modal = new bootstrap.Modal('#modal', {})
 
-    obtenerCategorias()
 
 
 
@@ -85,8 +98,8 @@ function iniciarApp() {
 
             const recetaImagen = document.createElement('IMG')
             recetaImagen.classList.add('card-img-top')
-            recetaImagen.alt = `Imagen de la receta  ${strMeal}`
-            recetaImagen.src = strMealThumb
+            recetaImagen.alt = `Imagen de la receta  ${strMeal ?? receta.titulo}`
+            recetaImagen.src = strMealThumb ?? receta.img
 
             const recetCardBody = document.createElement('DIV')
             recetCardBody.classList.add('card-body')
@@ -94,7 +107,7 @@ function iniciarApp() {
 
             const recetaHeading = document.createElement('H3')
             recetaHeading.classList.add('card-title', 'mb-3')
-            recetaHeading.textContent = strMeal
+            recetaHeading.textContent = strMeal ?? receta.titulo
 
 
             const recetaButton = document.createElement('BUTTON')
@@ -103,7 +116,7 @@ function iniciarApp() {
             // recetaButton.dataset.bsTarget = "#modal"
             // recetaButton.dataset.bsToggle = 'modal'
             recetaButton.onclick = function () {
-                seleccionarReceta(idMeal)
+                seleccionarReceta(idMeal ?? receta.id)
             }
 
 
@@ -156,18 +169,18 @@ function iniciarApp() {
         //Mostrar CAntidades 
 
 
-        for(let i=1; i<=20;i++){
+        for (let i = 1; i <= 20; i++) {
 
             // console.log(receta[`strIngredient${i}`])
 
-            if(receta[`strIngredient${i}`]){
+            if (receta[`strIngredient${i}`]) {
 
                 // console.log(receta[`strIngredient${i}`])
                 const ingrediente = receta[`strIngredient${i}`]
                 const cantidad = receta[`strMeasure${i}`]
 
                 const ingredienteLi = document.createElement('LI')
-                ingredienteLi.classList.add ('list-group-item')
+                ingredienteLi.classList.add('list-group-item')
                 ingredienteLi.textContent = `${ingrediente} - ${cantidad}`
 
                 listGroup.appendChild(ingredienteLi)
@@ -180,26 +193,44 @@ function iniciarApp() {
         const modalFooter = document.querySelector('.modal-footer')
         limpiarHTML(modalFooter)
 
-     //Botonos y cerrar favorito 
+        //Botonos y cerrar favorito 
         const btnFavorito = document.createElement('BUTTON')
-        btnFavorito.classList.add('btn','btn-danger', 'col')
-        btnFavorito.textContent = 'Guardar Favorito'    
+        btnFavorito.classList.add('btn', 'btn-danger', 'col')
+        btnFavorito.textContent = existeStorage(idMeal) ? 'Eliminar Favorito' : 'Guardar Favorito';
 
         const btnCerrarModal = document.createElement('BUTTON')
-        btnCerrarModal.classList.add('btn','btn-secondary', 'col')
-        btnCerrarModal.textContent = 'Cerrar'    
+        btnCerrarModal.classList.add('btn', 'btn-secondary', 'col')
+        btnCerrarModal.textContent = 'Cerrar'
 
-        btnCerrarModal.onclick = function(){
+        btnCerrarModal.onclick = function () {
             modal.hide()
         }
 
-         //LOCAL STORAGE
-        btnFavorito.onclick = function (){
-            agregarFavorito({
-                id: idMeal,
-                titulo: strMeal,
-                img: strMealThumb
-            });
+
+        //LOCAL STORAGE
+        btnFavorito.onclick = function () {
+
+            console.log(existeStorage(idMeal))
+
+            if (existeStorage(idMeal)) {
+                eliminarFavorito(idMeal)
+                btnFavorito.textContent = 'Guardar Favorito'
+                mostrarToast('Eliminado Correctamente')
+                return
+            } else {
+                agregarFavorito({
+                    id: idMeal,
+                    titulo: strMeal,
+                    img: strMealThumb
+                });
+
+                btnFavorito.textContent = 'Eliminar Favorito'
+                mostrarToast('Agregado Correctamente')
+
+            }
+
+
+
         }
 
         modalFooter.appendChild(btnFavorito)
@@ -209,14 +240,51 @@ function iniciarApp() {
         modal.show()
     }
 
-    function agregarFavorito(receta){
+    function agregarFavorito(receta) {
         // console.log(receta)
         const favoritos = JSON.parse(localStorage.getItem('favoritos')) ?? []
         localStorage.setItem('favoritos', JSON.stringify([...favoritos, receta]))
     }
 
-    function existeStorage(){
-         
+
+    function eliminarFavorito(id) {
+        const favoritos = JSON.parse(localStorage.getItem('favoritos')) ?? []
+        const nuevosFavoritos = favoritos.filter(favorito => favorito.id !== id)
+        localStorage.setItem('favoritos', JSON.stringify(nuevosFavoritos))
+    }
+
+    function existeStorage(id) {
+        const favoritos = JSON.parse(localStorage.getItem('favoritos')) ?? []
+        return favoritos.some(favorito => favorito.id === id)
+
+    }
+
+
+    function mostrarToast(mensaje) {
+        const toastDiv = document.querySelector('#toast')
+        const toastBody = document.querySelector('.toast-body')
+        const toast = new bootstrap.Toast(toastDiv)
+
+        toastBody.textContent = mensaje
+        toast.show()
+
+    }
+
+
+    function obtenerFavoritos(){
+
+        const favoritos =  JSON.parse(localStorage.getItem('favoritos')) ?? []
+
+        if(favoritos.length){
+           mostrarRecetas(favoritos)
+           
+            return
+        }
+
+        const noFavoritos = document.createElement('P')
+        noFavoritos.textContent = 'No hay Favoritos'
+        noFavoritos.classList.add ('fs-4', 'text-center', 'font-bold', 'mt-5')
+        favoritosDiv.appendChild(noFavoritos)
     }
 
     function limpiarHTML(selector) {
