@@ -148,11 +148,34 @@ function iniciarApp() {
             <img class="img-fluid" src="${strMealThumb}" alt="receta ${strMeal}" />
             <h3 class="my-3">Instrucciones</h3>
             <p>${strInstructions}</p>
+            <h3 class="my-3">Ingredientes y cantidades</h3>
         `
+
+        const listGroup = document.createElement('UL')
+        listGroup.classList.add('list-group')
         //Mostrar CAntidades 
-        
 
 
+        for(let i=1; i<=20;i++){
+
+            // console.log(receta[`strIngredient${i}`])
+
+            if(receta[`strIngredient${i}`]){
+
+                // console.log(receta[`strIngredient${i}`])
+                const ingrediente = receta[`strIngredient${i}`]
+                const cantidad = receta[`strMeasure${i}`]
+
+                const ingredienteLi = document.createElement('LI')
+                ingredienteLi.classList.add ('list-group-item')
+                ingredienteLi.textContent = `${ingrediente} - ${cantidad}`
+
+                listGroup.appendChild(ingredienteLi)
+                console.log()
+            }
+        }
+
+        modalBody.appendChild(listGroup)
 
         // console.log(receta)
         modal.show()
